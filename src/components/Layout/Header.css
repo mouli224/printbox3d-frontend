@@ -122,8 +122,7 @@
 
 .login-btn {
   padding: 0.6rem 1.5rem;
-  background: black;
-  color: white;
+  color: rgb(10, 10, 10);
   border-radius: 8px;
   font-weight: 600;
   text-decoration: none;
