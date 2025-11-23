@@ -224,24 +224,56 @@
   text-align: center;
 }
 
+@media (max-width: 968px) {
+  .nav-links {
+    gap: 1.5rem;
+  }
+  
+  .nav-links li a,
+  .nav-links li button {
+    font-size: 0.85rem;
+  }
+}
+
 @media (max-width: 768px) {
+  .navbar {
+    padding: 1rem 0;
+  }
+
+  .logo {
+    font-size: 1.3rem;
+    flex-shrink: 0;
+  }
+
+  .logo-image {
+    height: 32px;
+    margin-right: 0.4rem;
+  }
+
+  .logo-text {
+    display: none;
+  }
+
   .menu-toggle {
     display: block;
+    flex-shrink: 0;
   }
 
   .nav-links {
     position: fixed;
     top: 0;
     right: -100%;
-    width: 70%;
+    width: 75%;
+    max-width: 300px;
     height: 100vh;
     background-color: var(--white);
     flex-direction: column;
     align-items: flex-start;
-    padding: 6rem 2rem 2rem;
+    padding: 5rem 2rem 2rem;
     gap: 1.5rem;
     box-shadow: -5px 0 20px rgba(0, 0, 0, 0.1);
     transition: var(--transition);
+    overflow-y: auto;
   }
 
   .nav-links.active {
@@ -254,12 +286,23 @@
 
   .nav-links li a {
     display: block;
-    padding: 0.5rem 0;
-    font-size: 1.1rem;
+    padding: 0.6rem 0;
+    font-size: 1rem;
   }
 
   .nav-actions {
-    gap: 0.5rem;
+    gap: 0.3rem;
+    flex-shrink: 0;
+  }
+
+  .login-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+
+  .user-btn {
+    padding: 0.4rem 0.5rem;
   }
 
   .user-name {
@@ -267,7 +310,60 @@
   }
 
   .user-dropdown {
-    right: auto;
-    left: 0;
+    right: 0;
+    left: auto;
+    min-width: 150px;
+  }
+
+  .cart-btn {
+    padding: 0.4rem;
+  }
+
+  .cart-btn svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .cart-badge {
+    font-size: 0.65rem;
+    padding: 0.1rem 0.35rem;
+    min-width: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar {
+    padding: 0.75rem 0;
+  }
+
+  .logo {
+    font-size: 1.1rem;
+  }
+
+  .logo-image {
+    height: 28px;
+    margin-right: 0.3rem;
+  }
+
+  .login-btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.75rem;
+  }
+
+  .nav-actions {
+    gap: 0.2rem;
+  }
+
+  .user-btn {
+    padding: 0.3rem 0.4rem;
+  }
+
+  .cart-btn {
+    padding: 0.3rem;
+  }
+
+  .cart-btn svg {
+    width: 18px;
+    height: 18px;
   }
 }
