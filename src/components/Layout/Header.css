@@ -122,8 +122,8 @@
 
 .login-btn {
   padding: 0.6rem 1.5rem;
-  background: black;
-  color: white;
+  /* background: black; */
+  color: black;
   border-radius: 8px;
   font-weight: 600;
   text-decoration: none;
