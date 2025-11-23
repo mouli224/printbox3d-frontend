@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './CustomOrder.css';
+import { customOrderAPI } from '../../services/api';
 
 const exampleProjects = [
   {
@@ -36,6 +37,9 @@ const CustomOrder = () => {
     quantity: '1',
     file: null
   });
+  
+  const [submitting, setSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState(null);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -52,22 +56,55 @@ const CustomOrder = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Custom order submitted:', formData);
-    alert('Thank you for your custom order request! We will contact you shortly.');
-    // Reset form
-    setFormData({
-      name: '',
-      email: '',
-      phone: '',
-      material: 'PLA',
-      color: '',
-      description: '',
-      budget: '',
-      quantity: '1',
-      file: null
-    });
+    
+    try {
+      setSubmitting(true);
+      setSubmitStatus(null);
+      
+      // Create FormData for file upload (backend expects 'design_file' field)
+      const submitData = new FormData();
+      submitData.append('name', formData.name);
+      submitData.append('email', formData.email);
+      submitData.append('phone', formData.phone);
+      submitData.append('material', formData.material);
+      submitData.append('color', formData.color);
+      submitData.append('description', formData.description);
+      submitData.append('budget', formData.budget);
+      submitData.append('quantity', formData.quantity);
+      
+      if (formData.file) {
+        submitData.append('design_file', formData.file);
+      }
+      
+      await customOrderAPI.submit(submitData);
+      
+      setSubmitStatus({ type: 'success', message: 'Thank you for your custom order request! We will contact you shortly.' });
+      
+      // Reset form
+      setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        material: 'PLA',
+        color: '',
+        description: '',
+        budget: '',
+        quantity: '1',
+        file: null
+      });
+      
+      // Reset file input
+      const fileInput = document.getElementById('file');
+      if (fileInput) fileInput.value = '';
+      
+    } catch (error) {
+      setSubmitStatus({ type: 'error', message: 'Failed to submit order. Please try again later.' });
+      console.error('Error submitting custom order:', error);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -219,8 +256,21 @@ const CustomOrder = () => {
                 </div>
               </div>
 
-              <button type="submit" className="submit-btn">
-                Submit Custom Order Request
+              {submitStatus && (
+                <div style={{ 
+                  padding: '10px', 
+                  marginBottom: '15px', 
+                  borderRadius: '4px',
+                  backgroundColor: submitStatus.type === 'success' ? '#d4edda' : '#f8d7da',
+                  color: submitStatus.type === 'success' ? '#155724' : '#721c24',
+                  border: `1px solid ${submitStatus.type === 'success' ? '#c3e6cb' : '#f5c6cb'}`
+                }}>
+                  {submitStatus.message}
+                </div>
+              )}
+
+              <button type="submit" className="submit-btn" disabled={submitting}>
+                {submitting ? 'Submitting...' : 'Submit Custom Order Request'}
               </button>
             </form>
           </div>

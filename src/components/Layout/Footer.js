@@ -1,15 +1,33 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import './Footer.css';
+import { newsletterAPI } from '../../services/api';
 
 const Footer = () => {
   const [email, setEmail] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [message, setMessage] = useState(null);
 
-  const handleNewsletterSubmit = (e) => {
+  const handleNewsletterSubmit = async (e) => {
     e.preventDefault();
-    // Handle newsletter signup
-    alert(`Thank you for subscribing with: ${email}`);
-    setEmail('');
+    
+    try {
+      setSubmitting(true);
+      setMessage(null);
+      
+      const response = await newsletterAPI.subscribe(email);
+      setMessage({ type: 'success', text: response.message || 'Successfully subscribed!' });
+      setEmail('');
+    } catch (error) {
+      setMessage({ 
+        type: 'error', 
+        text: error.message || 'Failed to subscribe. Please try again.' 
+      });
+    } finally {
+      setSubmitting(false);
+      // Clear message after 3 seconds
+      setTimeout(() => setMessage(null), 3000);
+    }
   };
 
   return (
@@ -75,12 +93,22 @@ const Footer = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                disabled={submitting}
                 className="newsletter-input"
               />
-              <button type="submit" className="newsletter-btn">
-                Subscribe
+              <button type="submit" className="newsletter-btn" disabled={submitting}>
+                {submitting ? 'Subscribing...' : 'Subscribe'}
               </button>
             </form>
+            {message && (
+              <p style={{ 
+                marginTop: '10px', 
+                fontSize: '14px',
+                color: message.type === 'success' ? '#4caf50' : '#f44336'
+              }}>
+                {message.text}
+              </p>
+            )}
           </div>
         </div>
 

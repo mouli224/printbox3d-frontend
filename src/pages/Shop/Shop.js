@@ -1,47 +1,67 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import './Shop.css';
-
-const allProducts = [
-  { id: 1, name: 'Geometric Planter', price: 899, category: 'home-decor', material: 'PLA', image: '/assets/products/geometric_planter.jpg' },
-  { id: 2, name: 'Phone Stand Pro', price: 599, category: 'gadgets', material: 'ABS', image: '/assets/products/phone_stand.jpg' },
-  { id: 3, name: 'Modern Wall Art', price: 1299, category: 'home-decor', material: 'PLA', image: '/assets/products/modern_wall_art.jpg' },
-  { id: 4, name: 'Cable Organizer Set', price: 449, category: 'gadgets', material: 'PLA', image: '/assets/products/cable_organizer.jpg' },
-  { id: 5, name: 'Desk Organizer', price: 799, category: 'gadgets', material: 'ABS', image: '/assets/products/desk_organizer.jpg' },
-  { id: 6, name: 'Decorative Vase', price: 1099, category: 'home-decor', material: 'PLA', image: '/assets/products/decorative_vase.jpg' },
-  { id: 7, name: 'Laptop Stand', price: 1499, category: 'gadgets', material: 'ABS', image: '/assets/products/laptop_stand.jpg' },
-  { id: 8, name: 'Wall Shelf', price: 1799, category: 'home-decor', material: 'PETG', image: '/assets/products/wall_shelf.jpg' },
-  { id: 9, name: 'Headphone Stand', price: 699, category: 'gadgets', material: 'PLA', image: '/assets/products/headphone_stand.jpg' }
-];
+import { productAPI } from '../../services/api';
 
 const Shop = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedMaterial, setSelectedMaterial] = useState('all');
   const [sortBy, setSortBy] = useState('featured');
+  const [allProducts, setAllProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const filterProducts = () => {
-    let filtered = [...allProducts];
+  // Fetch products from backend
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const data = await productAPI.getAll({
+          category: selectedCategory,
+          material: selectedMaterial,
+          sort: sortBy
+        });
+        setAllProducts(data);
+        setError(null);
+      } catch (err) {
+        console.error('Failed to fetch products:', err);
+        setError('Failed to load products. Please try again later.');
+        // Fallback to empty array if backend is not available
+        setAllProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    if (selectedCategory !== 'all') {
-      filtered = filtered.filter(p => p.category === selectedCategory);
-    }
+    fetchProducts();
+  }, [selectedCategory, selectedMaterial, sortBy]);
 
-    if (selectedMaterial !== 'all') {
-      filtered = filtered.filter(p => p.material === selectedMaterial);
-    }
+  // Products are already filtered and sorted by the backend
+  const products = allProducts;
 
-    if (sortBy === 'price-low') {
-      filtered.sort((a, b) => a.price - b.price);
-    } else if (sortBy === 'price-high') {
-      filtered.sort((a, b) => b.price - a.price);
-    } else if (sortBy === 'name') {
-      filtered.sort((a, b) => a.name.localeCompare(b.name));
-    }
+  if (loading) {
+    return (
+      <div className="shop-page">
+        <div className="container">
+          <div style={{ textAlign: 'center', padding: '50px' }}>
+            <p>Loading products...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-    return filtered;
-  };
-
-  const products = filterProducts();
+  if (error) {
+    return (
+      <div className="shop-page">
+        <div className="container">
+          <div style={{ textAlign: 'center', padding: '50px' }}>
+            <p style={{ color: 'red' }}>{error}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="shop-page">
@@ -158,7 +178,7 @@ const Shop = () => {
 
             <div className="products-grid">
               {products.map((product) => (
-                <Link to={`/product/${product.id}`} key={product.id} className="product-card">
+                <Link to={`/product/${product.slug}`} key={product.id} className="product-card">
                   <div className="product-image">
                     <img src={product.image} alt={product.name} />
                     <div className="product-overlay">

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './Contact.css';
+import { contactAPI } from '../../services/api';
 
 const faqs = [
   {
@@ -43,6 +44,8 @@ const Contact = () => {
   });
 
   const [activeAccordion, setActiveAccordion] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState(null);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -52,16 +55,28 @@ const Contact = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Contact form submitted:', formData);
-    alert('Thank you for contacting us! We will respond within 24 hours.');
-    setFormData({
-      name: '',
-      email: '',
-      subject: '',
-      message: ''
-    });
+    
+    try {
+      setSubmitting(true);
+      setSubmitStatus(null);
+      
+      await contactAPI.submit(formData);
+      
+      setSubmitStatus({ type: 'success', message: 'Thank you for contacting us! We will respond within 24 hours.' });
+      setFormData({
+        name: '',
+        email: '',
+        subject: '',
+        message: ''
+      });
+    } catch (error) {
+      setSubmitStatus({ type: 'error', message: 'Failed to submit form. Please try again later.' });
+      console.error('Error submitting contact form:', error);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const toggleAccordion = (id) => {
@@ -138,8 +153,21 @@ const Contact = () => {
                 ></textarea>
               </div>
 
-              <button type="submit" className="submit-btn">
-                Send Message
+              {submitStatus && (
+                <div style={{ 
+                  padding: '10px', 
+                  marginBottom: '15px', 
+                  borderRadius: '4px',
+                  backgroundColor: submitStatus.type === 'success' ? '#d4edda' : '#f8d7da',
+                  color: submitStatus.type === 'success' ? '#155724' : '#721c24',
+                  border: `1px solid ${submitStatus.type === 'success' ? '#c3e6cb' : '#f5c6cb'}`
+                }}>
+                  {submitStatus.message}
+                </div>
+              )}
+
+              <button type="submit" className="submit-btn" disabled={submitting}>
+                {submitting ? 'Sending...' : 'Send Message'}
               </button>
             </form>
           </div>

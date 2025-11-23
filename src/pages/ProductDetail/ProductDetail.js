@@ -1,25 +1,106 @@
-import React, { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import './ProductDetail.css';
-
-const productData = {
-  1: { id: 1, name: 'Geometric Planter', price: 899, category: 'Home Decor', material: 'PLA', color: 'White', dimensions: '12cm x 12cm x 10cm', description: 'A modern geometric planter perfect for succulents and small plants. Made with premium PLA material for durability and aesthetic appeal.', image: '/assets/products/geometric_planter.jpg' },
-  2: { id: 2, name: 'Phone Stand Pro', price: 599, category: 'Gadgets', material: 'ABS', color: 'Black', dimensions: '8cm x 7cm x 10cm', description: 'Ergonomic phone stand designed for optimal viewing angles. Sturdy ABS construction ensures stability for all phone sizes.', image: '/assets/products/phone_stand.jpg' },
-  3: { id: 3, name: 'Modern Wall Art', price: 1299, category: 'Home Decor', material: 'PLA', color: 'Multiple', dimensions: '30cm x 30cm x 2cm', description: 'Contemporary geometric wall art piece that adds a modern touch to any space. Lightweight and easy to mount.', image: '/assets/products/modern_wall_art.jpg' }
-};
+import { productAPI } from '../../services/api';
+import { useCart } from '../../context/CartContext';
 
 const ProductDetail = () => {
-  const { id } = useParams();
-  const product = productData[id] || productData[1];
+  const { id: slug } = useParams(); // The URL parameter is actually a slug
+  const [product, setProduct] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState('description');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [addingToCart, setAddingToCart] = useState(false);
+  const { addToCart } = useCart();
+  const navigate = useNavigate();
+
+  // Fetch product from backend using slug
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        setLoading(true);
+        const data = await productAPI.getBySlug(slug);
+        setProduct(data);
+        setError(null);
+      } catch (err) {
+        console.error('Failed to fetch product:', err);
+        setError('Failed to load product. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProduct();
+  }, [slug]);
 
   const handleQuantityChange = (change) => {
     const newQuantity = quantity + change;
-    if (newQuantity >= 1) {
+    if (newQuantity >= 1 && newQuantity <= product.stock_quantity) {
       setQuantity(newQuantity);
     }
   };
+
+  const handleAddToCart = async () => {
+    if (!product.is_available) {
+      alert('This product is currently out of stock');
+      return;
+    }
+
+    try {
+      setAddingToCart(true);
+      await addToCart(product, quantity);
+      alert(`Added ${quantity} ${product.name} to cart!`);
+      setQuantity(1);
+    } catch (error) {
+      alert('Failed to add to cart. Please try again.');
+    } finally {
+      setAddingToCart(false);
+    }
+  };
+
+  const handleBuyNow = async () => {
+    if (!product.is_available) {
+      alert('This product is currently out of stock');
+      return;
+    }
+
+    try {
+      setAddingToCart(true);
+      await addToCart(product, quantity);
+      navigate('/cart');
+    } catch (error) {
+      alert('Failed to proceed. Please try again.');
+      setAddingToCart(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="product-detail-page">
+        <div className="container">
+          <div style={{ textAlign: 'center', padding: '50px' }}>
+            <p>Loading product...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !product) {
+    return (
+      <div className="product-detail-page">
+        <div className="container">
+          <div style={{ textAlign: 'center', padding: '50px' }}>
+            <p style={{ color: 'red' }}>{error || 'Product not found'}</p>
+            <Link to="/shop" style={{ marginTop: '20px', display: 'inline-block' }}>
+              Back to Shop
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="product-detail-page">
@@ -40,14 +121,14 @@ const ProductDetail = () => {
           </div>
 
           <div className="product-info-section">
-            <span className="product-category">{product.category}</span>
+            <span className="product-category">{product.category?.name || product.category_name}</span>
             <h1 className="product-title">{product.name}</h1>
             <p className="product-price">₹{product.price}</p>
 
             <div className="product-specs">
               <div className="spec-item">
                 <span className="spec-label">Material:</span>
-                <span className="spec-value">{product.material}</span>
+                <span className="spec-value">{product.material?.name || product.material_name}</span>
               </div>
               <div className="spec-item">
                 <span className="spec-label">Color:</span>
@@ -57,20 +138,56 @@ const ProductDetail = () => {
                 <span className="spec-label">Dimensions:</span>
                 <span className="spec-value">{product.dimensions}</span>
               </div>
+              {product.weight && (
+                <div className="spec-item">
+                  <span className="spec-label">Weight:</span>
+                  <span className="spec-value">{product.weight}g</span>
+                </div>
+              )}
+              <div className="spec-item">
+                <span className="spec-label">Stock:</span>
+                <span className="spec-value">
+                  {product.is_available 
+                    ? `${product.stock_quantity} available` 
+                    : 'Out of stock'}
+                </span>
+              </div>
             </div>
 
             <div className="quantity-selector">
               <label>Quantity:</label>
               <div className="quantity-controls">
-                <button onClick={() => handleQuantityChange(-1)}>-</button>
+                <button 
+                  onClick={() => handleQuantityChange(-1)}
+                  disabled={quantity <= 1 || !product.is_available}
+                >
+                  -
+                </button>
                 <span>{quantity}</span>
-                <button onClick={() => handleQuantityChange(1)}>+</button>
+                <button 
+                  onClick={() => handleQuantityChange(1)}
+                  disabled={quantity >= product.stock_quantity || !product.is_available}
+                >
+                  +
+                </button>
               </div>
             </div>
 
             <div className="product-actions">
-              <button className="add-to-cart-btn">Add to Cart</button>
-              <button className="buy-now-btn">Buy Now</button>
+              <button 
+                className="add-to-cart-btn" 
+                onClick={handleAddToCart}
+                disabled={addingToCart || !product.is_available}
+              >
+                {addingToCart ? 'Adding...' : product.is_available ? 'Add to Cart' : 'Out of Stock'}
+              </button>
+              <button 
+                className="buy-now-btn"
+                onClick={handleBuyNow}
+                disabled={addingToCart || !product.is_available}
+              >
+                {product.is_available ? 'Buy Now' : 'Out of Stock'}
+              </button>
             </div>
 
             <div className="product-features">
@@ -134,12 +251,20 @@ const ProductDetail = () => {
             {activeTab === 'specifications' && (
               <div className="tab-panel">
                 <ul className="specs-list">
-                  <li><strong>Material:</strong> {product.material} (Premium Grade)</li>
+                  <li><strong>Material:</strong> {product.material?.name || product.material_name} (Premium Grade)</li>
+                  {product.material?.description && (
+                    <li><strong>Material Info:</strong> {product.material.description}</li>
+                  )}
+                  {product.material?.properties && (
+                    <li><strong>Properties:</strong> {product.material.properties}</li>
+                  )}
                   <li><strong>Color:</strong> {product.color}</li>
                   <li><strong>Dimensions:</strong> {product.dimensions}</li>
-                  <li><strong>Weight:</strong> Approximately 150g</li>
-                  <li><strong>Layer Height:</strong> 0.2mm for smooth finish</li>
-                  <li><strong>Infill:</strong> 20% for optimal strength</li>
+                  {product.weight && (
+                    <li><strong>Weight:</strong> {product.weight}g</li>
+                  )}
+                  <li><strong>Stock Quantity:</strong> {product.stock_quantity}</li>
+                  <li><strong>Availability:</strong> {product.is_available ? 'In Stock' : 'Out of Stock'}</li>
                 </ul>
               </div>
             )}
