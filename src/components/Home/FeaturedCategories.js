@@ -12,9 +12,17 @@ const FeaturedCategories = () => {
       try {
         setLoading(true);
         const data = await categoryAPI.getAll();
-        // Add custom order as a special category
+        
+        // Filter out any existing Custom Orders category from backend
+        const regularCategories = data.filter(cat => 
+          cat.slug !== 'custom-order' && 
+          cat.slug !== 'custom-orders' &&
+          !cat.name.toLowerCase().includes('custom order')
+        );
+        
+        // Take first 2 regular categories and add custom order
         const categoriesWithCustom = [
-          ...data.slice(0, 2).map(cat => ({
+          ...regularCategories.slice(0, 2).map(cat => ({
             id: cat.id,
             name: cat.name,
             description: cat.description || `Explore our ${cat.name.toLowerCase()} collection`,
