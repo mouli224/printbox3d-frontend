@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import './BestSellers.css';
 import { productAPI } from '../../services/api';
 import { getImageUrl } from '../../utils/imageUtils';
+import LazyImage from '../common/LazyImage';
 
 const BestSellers = () => {
   const [products, setProducts] = useState([]);
@@ -57,10 +58,10 @@ const BestSellers = () => {
             products.map((product) => (
               <Link to={`/product/${product.slug}`} key={product.id} className="product-card">
                 <div className="product-image">
-                  <img 
+                  <LazyImage 
                     src={getImageUrl(product.image, product.name, product.slug)} 
                     alt={product.name}
-                    onError={(e) => e.target.src = '/assets/products/phone-stand/phone-stand.jpg'}
+                    className="product-img"
                   />
                   <div className="product-badge">{product.category_name || product.category?.name}</div>
                 </div>

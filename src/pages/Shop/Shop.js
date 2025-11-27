@@ -1,77 +1,9 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import './Shop.css';
 import { productAPI } from '../../services/api';
 import { getImageUrl } from '../../utils/imageUtils';
-
-// Lazy loading image component
-const LazyImage = ({ src, alt, className }) => {
-  const [imageSrc, setImageSrc] = useState(null);
-  const [imageLoaded, setImageLoaded] = useState(false);
-  const imgRef = useRef();
-
-  useEffect(() => {
-    let observer;
-    
-    if (imgRef.current) {
-      observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              setImageSrc(src);
-              observer.disconnect();
-            }
-          });
-        },
-        {
-          rootMargin: '50px',
-        }
-      );
-      observer.observe(imgRef.current);
-    }
-
-    return () => {
-      if (observer && observer.disconnect) {
-        observer.disconnect();
-      }
-    };
-  }, [src]);
-
-  return (
-    <div ref={imgRef} className={className} style={{ position: 'relative', backgroundColor: '#f0f0f0' }}>
-      {imageSrc && (
-        <img
-          src={imageSrc}
-          alt={alt}
-          style={{
-            opacity: imageLoaded ? 1 : 0,
-            transition: 'opacity 0.3s',
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover'
-          }}
-          onLoad={() => setImageLoaded(true)}
-        />
-      )}
-      {!imageLoaded && (
-        <div style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: '#f0f0f0',
-          animation: 'pulse 1.5s ease-in-out infinite'
-        }}>
-          <span style={{ color: '#999', fontSize: '0.9rem' }}>Loading...</span>
-        </div>
-      )}
-    </div>
-  );
-};
+import LazyImage from '../../components/common/LazyImage';
 
 const Shop = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -80,6 +12,15 @@ const Shop = () => {
   const [allProducts, setAllProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Parse URL parameters on mount
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const categoryParam = params.get('category');
+    if (categoryParam) {
+      setSelectedCategory(categoryParam);
+    }
+  }, []);
 
   // Fetch products from backend
   useEffect(() => {

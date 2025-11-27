@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import './FeaturedCategories.css';
 import { categoryAPI } from '../../services/api';
+import LazyImage from '../common/LazyImage';
 
 const FeaturedCategories = () => {
   const [categories, setCategories] = useState([]);
@@ -107,7 +108,7 @@ const FeaturedCategories = () => {
           {categories.map((category) => (
             <Link to={category.link} key={category.id} className="category-card">
               <div className="category-image">
-                <img src={category.image} alt={category.name} />
+                <LazyImage src={category.image} alt={category.name} className="category-img" />
                 <div className="category-overlay"></div>
               </div>
               <div className="category-content">

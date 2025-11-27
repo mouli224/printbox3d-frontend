@@ -1,0 +1,36 @@
+/* Lazy Load Image Styling */
+.lazy-load-image-background {
+  display: block !important;
+  width: 100%;
+  height: 100%;
+}
+
+.lazy-load-image-background.blur {
+  filter: blur(15px);
+}
+
+.lazy-load-image-background.blur.lazy-load-image-loaded {
+  filter: blur(0);
+  transition: filter 0.3s;
+}
+
+.lazy-load-image-background > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Product Image Styling */
+.product-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.category-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
