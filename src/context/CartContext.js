@@ -14,7 +14,7 @@ export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Load cart from localStorage (backend cart not implemented yet)
+  // Load cart from localStorage (persists across sessions)
   useEffect(() => {
     loadCartFromLocalStorage();
   }, []);
@@ -121,6 +121,9 @@ export const CartProvider = ({ children }) => {
     return cartItems.reduce((count, item) => count + item.quantity, 0);
   };
 
+  // Memoize cart count to ensure header updates
+  const cartCount = getCartCount();
+
   const value = {
     cartItems,
     loading,
@@ -129,7 +132,8 @@ export const CartProvider = ({ children }) => {
     removeFromCart,
     clearCart,
     getCartTotal,
-    getCartCount
+    getCartCount,
+    cartCount
   };
 
   return (

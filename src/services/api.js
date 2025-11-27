@@ -292,10 +292,10 @@ export const authAPI = {
       }
       
       const data = await response.json();
-      // Store token in localStorage
+      // Store token in sessionStorage (clears on browser close)
       if (data.token) {
-        localStorage.setItem('authToken', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
+        sessionStorage.setItem('authToken', data.token);
+        sessionStorage.setItem('user', JSON.stringify(data.user));
       }
       return data;
     } catch (error) {
@@ -305,12 +305,12 @@ export const authAPI = {
   },
 
   logout: () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('user');
+    sessionStorage.removeItem('authToken');
+    sessionStorage.removeItem('user');
   },
 
   getCurrentUser: async () => {
-    const token = localStorage.getItem('authToken');
+    const token = sessionStorage.getItem('authToken');
     if (!token) {
       return null;
     }
@@ -329,7 +329,7 @@ export const authAPI = {
       }
       
       const user = await response.json();
-      localStorage.setItem('user', JSON.stringify(user));
+      sessionStorage.setItem('user', JSON.stringify(user));
       return user;
     } catch (error) {
       console.error('Error fetching current user:', error);
@@ -339,7 +339,7 @@ export const authAPI = {
   },
 
   updateProfile: async (userData) => {
-    const token = localStorage.getItem('authToken');
+    const token = sessionStorage.getItem('authToken');
     try {
       const response = await fetch(`${API_BASE_URL}/api/auth/profile/`, {
         method: 'PUT',
@@ -359,7 +359,7 @@ export const authAPI = {
       }
       
       const data = await response.json();
-      localStorage.setItem('user', JSON.stringify(data));
+      sessionStorage.setItem('user', JSON.stringify(data));
       return data;
     } catch (error) {
       console.error('Error updating profile:', error);
@@ -371,7 +371,7 @@ export const authAPI = {
 // Cart API
 export const cartAPI = {
   getCart: async () => {
-    const token = localStorage.getItem('authToken');
+    const token = sessionStorage.getItem('authToken');
     try {
       const response = await fetch(`${API_BASE_URL}/api/cart/`, {
         headers: token ? {
@@ -391,7 +391,7 @@ export const cartAPI = {
   },
 
   addItem: async (productId, quantity = 1) => {
-    const token = localStorage.getItem('authToken');
+    const token = sessionStorage.getItem('authToken');
     try {
       const response = await fetch(`${API_BASE_URL}/api/cart/add/`, {
         method: 'POST',
@@ -415,7 +415,7 @@ export const cartAPI = {
   },
 
   updateItem: async (itemId, quantity) => {
-    const token = localStorage.getItem('authToken');
+    const token = sessionStorage.getItem('authToken');
     try {
       const response = await fetch(`${API_BASE_URL}/api/cart/update/${itemId}/`, {
         method: 'PUT',
@@ -438,7 +438,7 @@ export const cartAPI = {
   },
 
   removeItem: async (itemId) => {
-    const token = localStorage.getItem('authToken');
+    const token = sessionStorage.getItem('authToken');
     try {
       const response = await fetch(`${API_BASE_URL}/api/cart/remove/${itemId}/`, {
         method: 'DELETE',
@@ -459,7 +459,7 @@ export const cartAPI = {
   },
 
   clearCart: async () => {
-    const token = localStorage.getItem('authToken');
+    const token = sessionStorage.getItem('authToken');
     try {
       const response = await fetch(`${API_BASE_URL}/api/cart/clear/`, {
         method: 'DELETE',
@@ -479,3 +479,177 @@ export const cartAPI = {
     }
   }
 };
+
+// Payment/Order API
+export const orderAPI = {
+  // Create order and get Razorpay order details
+  createOrder: async (orderData) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/orders/create/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(orderData)
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create order');
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Error creating order:', error);
+      throw error;
+    }
+  },
+
+  // Verify payment after Razorpay payment
+  verifyPayment: async (paymentData) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/orders/verify-payment/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(paymentData)
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Payment verification failed');
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Error verifying payment:', error);
+      throw error;
+    }
+  },
+
+  // Get order status by order ID
+  getOrderStatus: async (orderId) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/orders/${orderId}/`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching order status:', error);
+      throw error;
+    }
+  },
+
+  // Record payment failure
+  recordPaymentFailure: async (failureData) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/orders/payment-failed/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(failureData)
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to record payment failure');
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Error recording payment failure:', error);
+      throw error;
+    }
+  }
+};
+
+// Default export with all APIs
+const api = {
+  get: async (url, options = {}) => {
+    const token = sessionStorage.getItem('authToken');
+    const response = await fetch(`${API_BASE_URL}${url}`, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { 'Authorization': `Bearer ${token}` }),
+        ...options.headers
+      }
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: 'Request failed' }));
+      throw new Error(errorData.error || errorData.detail || 'Request failed');
+    }
+    
+    return await response.json();
+  },
+
+  post: async (url, data, options = {}) => {
+    const token = sessionStorage.getItem('authToken');
+    const response = await fetch(`${API_BASE_URL}${url}`, {
+      method: 'POST',
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { 'Authorization': `Bearer ${token}` }),
+        ...options.headers
+      },
+      body: JSON.stringify(data)
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: 'Request failed' }));
+      throw new Error(errorData.error || errorData.detail || 'Request failed');
+    }
+    
+    return await response.json();
+  },
+
+  put: async (url, data, options = {}) => {
+    const token = sessionStorage.getItem('authToken');
+    const response = await fetch(`${API_BASE_URL}${url}`, {
+      method: 'PUT',
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { 'Authorization': `Bearer ${token}` }),
+        ...options.headers
+      },
+      body: JSON.stringify(data)
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: 'Request failed' }));
+      throw new Error(errorData.error || errorData.detail || 'Request failed');
+    }
+    
+    return await response.json();
+  },
+
+  delete: async (url, options = {}) => {
+    const token = sessionStorage.getItem('authToken');
+    const response = await fetch(`${API_BASE_URL}${url}`, {
+      method: 'DELETE',
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { 'Authorization': `Bearer ${token}` }),
+        ...options.headers
+      }
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: 'Request failed' }));
+      throw new Error(errorData.error || errorData.detail || 'Request failed');
+    }
+    
+    return await response.json();
+  }
+};
+
+export default api;

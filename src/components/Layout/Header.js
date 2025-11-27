@@ -10,7 +10,7 @@ const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout, isAuthenticated } = useAuth();
-  const { getCartCount } = useCart();
+  const { cartCount } = useCart();
 
   const isActive = (path) => {
     return location.pathname === path ? 'active' : '';
@@ -29,8 +29,6 @@ const Header = () => {
     setShowUserMenu(false);
     navigate('/');
   };
-
-  const cartCount = getCartCount();
 
   return (
     <header className="header">

@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
+import { getImageUrl } from '../../utils/imageUtils';
 import './Cart.css';
 
 const Cart = () => {
@@ -13,8 +14,7 @@ const Cart = () => {
     if (!isAuthenticated) {
       navigate('/login', { state: { from: { pathname: '/cart' } } });
     } else {
-      // TODO: Navigate to checkout page
-      alert('Checkout functionality coming soon!');
+      navigate('/checkout');
     }
   };
 
@@ -49,7 +49,7 @@ const Cart = () => {
             {cartItems.map((item) => (
               <div key={item.id} className="cart-item">
                 <div className="cart-item-image">
-                  <img src={item.product.image} alt={item.product.name} />
+                  <img src={getImageUrl(item.product.image, item.product.name, item.product.frontend_image)} alt={item.product.name} />
                 </div>
                 
                 <div className="cart-item-details">

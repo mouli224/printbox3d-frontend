@@ -4,7 +4,7 @@ import './Hero.css';
 
 const Hero = () => {
   return (
-    <section className="hero">
+    <section className="hero" style={{ backgroundImage: 'url(/assets/hero/hero-background.jpg)' }}>
       <div className="hero-overlay"></div>
       <div className="hero-content">
         <h1 className="hero-title">

@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import './ProductDetail.css';
 import { productAPI } from '../../services/api';
 import { useCart } from '../../context/CartContext';
+import { getImageUrl, getProductImages } from '../../utils/imageUtils';
 
 const ProductDetail = () => {
   const { id: slug } = useParams(); // The URL parameter is actually a slug
@@ -12,6 +13,8 @@ const ProductDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [addingToCart, setAddingToCart] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(0);
+  const [productImages, setProductImages] = useState([]);
   const { addToCart } = useCart();
   const navigate = useNavigate();
 
@@ -22,6 +25,12 @@ const ProductDetail = () => {
         setLoading(true);
         const data = await productAPI.getBySlug(slug);
         setProduct(data);
+        
+        // Get all product images
+        const images = getProductImages(data.slug);
+        setProductImages(images);
+        setSelectedImage(0);
+        
         setError(null);
       } catch (err) {
         console.error('Failed to fetch product:', err);
@@ -43,17 +52,15 @@ const ProductDetail = () => {
 
   const handleAddToCart = async () => {
     if (!product.is_available) {
-      alert('This product is currently out of stock');
       return;
     }
 
     try {
       setAddingToCart(true);
       await addToCart(product, quantity);
-      alert(`Added ${quantity} ${product.name} to cart!`);
       setQuantity(1);
     } catch (error) {
-      alert('Failed to add to cart. Please try again.');
+      console.error('Failed to add to cart:', error);
     } finally {
       setAddingToCart(false);
     }
@@ -61,7 +68,6 @@ const ProductDetail = () => {
 
   const handleBuyNow = async () => {
     if (!product.is_available) {
-      alert('This product is currently out of stock');
       return;
     }
 
@@ -70,7 +76,7 @@ const ProductDetail = () => {
       await addToCart(product, quantity);
       navigate('/cart');
     } catch (error) {
-      alert('Failed to proceed. Please try again.');
+      console.error('Failed to proceed:', error);
       setAddingToCart(false);
     }
   };
@@ -116,8 +122,30 @@ const ProductDetail = () => {
         <div className="product-detail-layout">
           <div className="product-image-section">
             <div className="main-image">
-              <img src={product.image} alt={product.name} />
+              <img 
+                src={productImages[selectedImage]} 
+                alt={`${product.name} - Image ${selectedImage + 1}`}
+                onError={(e) => {
+                  e.target.src = '/assets/products/phone-stand/phone-stand.jpg';
+                }}
+              />
             </div>
+            {productImages.length > 1 && (
+              <div className="image-thumbnails">
+                {productImages.map((img, index) => (
+                  <div
+                    key={index}
+                    className={`thumbnail ${selectedImage === index ? 'active' : ''}`}
+                    onClick={() => setSelectedImage(index)}
+                  >
+                    <img 
+                      src={img} 
+                      alt={`${product.name} thumbnail ${index + 1}`}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="product-info-section">
@@ -179,7 +207,7 @@ const ProductDetail = () => {
                 onClick={handleAddToCart}
                 disabled={addingToCart || !product.is_available}
               >
-                {addingToCart ? 'Adding...' : product.is_available ? 'Add to Cart' : 'Out of Stock'}
+                {addingToCart ? 'Added! ✓' : product.is_available ? 'Add to Cart' : 'Out of Stock'}
               </button>
               <button 
                 className="buy-now-btn"

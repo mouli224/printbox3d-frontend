@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import './Shop.css';
 import { productAPI } from '../../services/api';
+import { getImageUrl } from '../../utils/imageUtils';
 
 // Lazy loading image component
 const LazyImage = ({ src, alt, className }) => {
@@ -249,7 +250,7 @@ const Shop = () => {
               {products.map((product) => (
                 <Link to={`/product/${product.slug}`} key={product.id} className="product-card">
                   <div className="product-image">
-                    <LazyImage src={product.image} alt={product.name} />
+                    <LazyImage src={getImageUrl(product.image, product.name, product.slug)} alt={product.name} />
                     <div className="product-overlay">
                       <span className="view-details">View Details</span>
                     </div>

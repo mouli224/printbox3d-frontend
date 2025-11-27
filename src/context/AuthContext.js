@@ -17,8 +17,8 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     // Check if user is already logged in
-    const storedUser = localStorage.getItem('user');
-    const token = localStorage.getItem('authToken');
+    const storedUser = sessionStorage.getItem('user');
+    const token = sessionStorage.getItem('authToken');
     
     if (storedUser && token) {
       setUser(JSON.parse(storedUser));
@@ -62,6 +62,7 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     authAPI.logout();
     setUser(null);
+    // Cart persists in localStorage even after logout
   };
 
   const updateProfile = async (userData) => {

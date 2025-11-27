@@ -12,6 +12,8 @@ import Contact from './pages/Contact/Contact';
 import Login from './pages/Auth/Login';
 import Register from './pages/Auth/Register';
 import Cart from './pages/Cart/Cart';
+import Checkout from './pages/Checkout/Checkout';
+import OrderSuccess from './pages/OrderSuccess/OrderSuccess';
 import Profile from './pages/Profile/Profile';
 import Orders from './pages/Orders/Orders';
 import './App.css';
@@ -32,6 +34,8 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/cart" element={<Cart />} />
+              <Route path="/checkout" element={<Checkout />} />
+              <Route path="/order-success/:orderId" element={<OrderSuccess />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/orders" element={<Orders />} />
             </Routes>

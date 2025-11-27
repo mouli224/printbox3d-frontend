@@ -20,13 +20,22 @@ const FeaturedCategories = () => {
           !cat.name.toLowerCase().includes('custom order')
         );
         
+        // Map category slugs to actual product images
+        const categoryImageMap = {
+          'home-decor': '/assets/products/decorative-vase/decorative-vase.jpg',
+          'accessories': '/assets/products/keychain/octopus-keychain.JPG',
+          'gadgets': '/assets/products/phone-stand/phone-stand.jpg',
+          'seasonal': '/assets/products/christmas-lamp/christmas-lamp-1.JPG',
+          'fitness': '/assets/products/dumbell/dumbell-1.JPG'
+        };
+        
         // Take first 2 regular categories and add custom order
         const categoriesWithCustom = [
           ...regularCategories.slice(0, 2).map(cat => ({
             id: cat.id,
             name: cat.name,
             description: cat.description || `Explore our ${cat.name.toLowerCase()} collection`,
-            image: cat.image || '/assets/products/geometric_planter.jpg',
+            image: categoryImageMap[cat.slug] || '/assets/products/phone-stand/phone-stand.jpg',
             link: `/shop?category=${cat.slug}`,
             slug: cat.slug
           })),
@@ -34,7 +43,7 @@ const FeaturedCategories = () => {
             id: 'custom',
             name: 'Custom Orders',
             description: 'Bring your ideas to life with bespoke prints',
-            image: '/assets/custom/custom_trophy.jpg',
+            image: '/assets/products/ganesh-idol/ganesh-idol.JPG',
             link: '/custom-order',
             slug: 'custom-order'
           }
@@ -42,27 +51,27 @@ const FeaturedCategories = () => {
         setCategories(categoriesWithCustom);
       } catch (err) {
         console.error('Failed to fetch categories:', err);
-        // Fallback to default categories
+        // Fallback to default categories with actual images
         setCategories([
           {
             id: 1,
             name: 'Home Decor',
             description: 'Unique decorative pieces for your living space',
-            image: '/assets/products/decorative_vase.jpg',
+            image: '/assets/products/decorative-vase/decorative-vase.jpg',
             link: '/shop?category=home-decor'
           },
           {
             id: 2,
             name: 'Gadgets & Accessories',
             description: 'Functional prints for everyday use',
-            image: '/assets/products/desk_organizer.jpg',
+            image: '/assets/products/phone-stand/phone-stand.jpg',
             link: '/shop?category=gadgets'
           },
           {
             id: 3,
             name: 'Custom Orders',
             description: 'Bring your ideas to life with bespoke prints',
-            image: '/assets/products/geometric_planter.jpg',
+            image: '/assets/products/ganesh-idol/ganesh-idol.JPG',
             link: '/custom-order'
           }
         ]);
