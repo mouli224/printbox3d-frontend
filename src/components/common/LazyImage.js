@@ -6,7 +6,7 @@ import './LazyImage.css';
 /**
  * Optimized lazy loading image component
  * - Lazy loads images as they enter viewport
- * - Blur effect while loading
+ * - Opacity transition while loading
  * - Fallback to placeholder on error
  * - WebP support with JPEG/PNG fallback
  */
@@ -16,8 +16,8 @@ const LazyImage = ({
   className = '', 
   width, 
   height,
-  effect = 'blur',
-  placeholderSrc = '/assets/products/phone-stand/phone-stand.webp'
+  effect = 'opacity',
+  placeholderSrc
 }) => {
   return (
     <LazyLoadImage
@@ -27,13 +27,12 @@ const LazyImage = ({
       width={width}
       height={height}
       effect={effect}
-      placeholderSrc={placeholderSrc}
       threshold={100} // Start loading 100px before entering viewport
       onError={(e) => {
         // If WebP fails, try fallback formats
         if (e.target.src.includes('.webp')) {
           e.target.src = e.target.src.replace('.webp', '.jpg').replace('.WEBP', '.JPG');
-        } else if (e.target.src !== placeholderSrc) {
+        } else if (placeholderSrc && e.target.src !== placeholderSrc) {
           e.target.src = placeholderSrc;
         }
       }}

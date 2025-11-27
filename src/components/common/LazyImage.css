@@ -3,21 +3,36 @@
   display: block !important;
   width: 100%;
   height: 100%;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s ease-in-out infinite;
 }
 
-.lazy-load-image-background.blur {
-  filter: blur(15px);
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
-.lazy-load-image-background.blur.lazy-load-image-loaded {
-  filter: blur(0);
-  transition: filter 0.3s;
+.lazy-load-image-background.opacity {
+  opacity: 0;
+  transition: opacity 0.4s ease-in;
+}
+
+.lazy-load-image-background.opacity.lazy-load-image-loaded {
+  opacity: 1;
+  background: transparent;
+  animation: none;
 }
 
 .lazy-load-image-background > img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
 }
 
 /* Product Image Styling */

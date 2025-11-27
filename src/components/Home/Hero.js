@@ -4,7 +4,7 @@ import './Hero.css';
 
 const Hero = () => {
   return (
-    <section className="hero" style={{ backgroundImage: 'url(/assets/hero/hero-background.jpg)' }}>
+    <section className="hero" style={{ backgroundImage: `url(${process.env.PUBLIC_URL}/assets/hero/hero-background.webp)` }}>
       <div className="hero-overlay"></div>
       <div className="hero-content">
         <h1 className="hero-title">
